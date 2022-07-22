@@ -9,6 +9,7 @@ public class Player : MonoBehaviour
     GameObject[] platforms;
     GameObject[] ramps;
     BoxCollider body;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -18,43 +19,29 @@ public class Player : MonoBehaviour
         body = gameObject.GetComponent<BoxCollider>();
     }
 
-    private void movementHandlerWeeeeeee()
-    {
-        if (Input.GetKey("w"))
-        {
-            // <x, y, z> = <x, y, z> + <0, 0, 1> * 0.01f.
-            position = position + Vector3.forward * speed;
-        }
-        if (Input.GetKey("s"))
-        {
-            position = position - Vector3.forward * speed;
-        }
-        if (Input.GetKey("a"))
-        {
-            //                    <1, 0, 0>
-            position = position - Vector3.right * speed;
-        }
-        if (Input.GetKey("d"))
-        {
-            position = position + Vector3.right * speed;
-        }
-    }
-
     // Update is called once per frame
     void Update()
     {
-        movementHandlerWeeeeeee();
+        movementHandler();
 
         foreach (GameObject platform in platforms)
         {
-            // Make collision with each platform (but not the ramps. Ramps are handled as a special case below, but you may want to make the sides of a ramp behave like a wall :o), or just use Unity's default collision detection. I personally like coding it myself, since then I can change it how 
-            // I like, but you can just use Unity's default collision detection too. 
+            BoxCollider box = platform.GetComponent<BoxCollider>();
+
+            // Implement collision detection between player and platforms
+            xCollisionHandler(body, box);
+            zCollisionHandler(body, box);
         }
-
-
+        
         foreach (GameObject ramp in ramps)
         {
+            
             BoxCollider box = ramp.GetComponent<BoxCollider>();
+
+            // Do not let player enter ramp from the side
+            xCollisionHandler(body, box);
+
+            // Move player up and down in y-direction on ramps
             if (body.bounds.center.x + body.bounds.extents.x > box.bounds.center.x - box.bounds.extents.x &&
                 body.bounds.center.x - body.bounds.extents.x < box.bounds.center.x + box.bounds.extents.x &&
                 body.bounds.center.z + body.bounds.extents.z > box.bounds.center.z - box.bounds.extents.z &&
@@ -63,9 +50,6 @@ public class Player : MonoBehaviour
                 float length = body.bounds.size.z + box.bounds.size.z;
                 float slope = box.bounds.size.y / length;
 
-                // We should make this work for ramps in all four different directions too (ramps to the right, ramps to the left, ramps behind you, etc). 
-                // Also, another thing to do is make sure the player cannot enter, say, a ramp that's infront of them, from the lefthand side. So ramps can only be entered 
-                // in the direction the ramps are angled towards. 
                 if (Input.GetKey("w"))
                 {
                     position = position + Vector3.up * slope * speed;
@@ -77,7 +61,125 @@ public class Player : MonoBehaviour
             }
         }
 
+        // Actual player movement occurs here
         transform.position = position;
+    }
 
+    // Normalized movement
+    private void movementHandler()
+    {
+        // Allow for multiple 'wasd' button presses at once
+        int upMoveCount = 0;
+        int rightMoveCount = 0;
+
+        if (Input.GetKey("w"))
+        {
+            upMoveCount += 1;
+        }
+        if (Input.GetKey("a"))
+        {
+            rightMoveCount -= 1;
+        }
+        if (Input.GetKey("s"))
+        {
+            upMoveCount -= 1;
+        }
+        if (Input.GetKey("d"))
+        {
+            rightMoveCount += 1;
+        }
+        if (upMoveCount != 0 || rightMoveCount != 0)
+        {
+            // Determine magnitude and direction of new position vector relative to old position
+            var magnitude = Mathf.Sqrt(rightMoveCount * rightMoveCount + upMoveCount * upMoveCount);
+            var resultant = rightMoveCount * Vector3.right + upMoveCount * Vector3.forward;
+
+            // Set new position
+            position = position + (resultant / magnitude) * speed;
+        }
+    }
+    
+    private void xCollisionHandler(BoxCollider self, BoxCollider obj)
+    {
+        // Only run this code if we are in the right z-location.
+        if (self.bounds.center.z + self.bounds.extents.z > obj.bounds.center.z - obj.bounds.extents.z &&
+            self.bounds.center.z - self.bounds.extents.z < obj.bounds.center.z + obj.bounds.extents.z)
+        {
+            // Colliding outside-left and moving right
+            if (self.bounds.center.x < obj.bounds.center.x - obj.bounds.extents.x &&
+                self.bounds.center.x + self.bounds.extents.x > obj.bounds.center.x - obj.bounds.extents.x &&
+                Input.GetKey("d"))
+            {
+                position = position - Vector3.right * speed;
+
+            }
+
+            // Colliding inside-right and moving left
+            if (self.bounds.center.x > obj.bounds.center.x - obj.bounds.extents.x &&
+                self.bounds.center.x - self.bounds.extents.x < obj.bounds.center.x - obj.bounds.extents.x &&
+                Input.GetKey("a"))
+            {
+                position = position + Vector3.right * speed;
+
+            }
+
+            // Colliding outside-right and moving left
+            if (self.bounds.center.x > obj.bounds.center.x + obj.bounds.extents.x &&
+                self.bounds.center.x - self.bounds.extents.x < obj.bounds.center.x + obj.bounds.extents.x &&
+                Input.GetKey("a"))
+            {
+                position = position + Vector3.right * speed;
+            }
+
+            // Colliding inside-left and moving right
+            if (self.bounds.center.x < obj.bounds.center.x + obj.bounds.extents.x &&
+                self.bounds.center.x + self.bounds.extents.x > obj.bounds.center.x + obj.bounds.extents.x &&
+                Input.GetKey("d"))
+            {
+                position = position - Vector3.right * speed;
+            }
+        }
+    }
+
+    private void zCollisionHandler(BoxCollider self, BoxCollider obj)
+    {
+        // Only run this code if we are in the right x-location.
+        if (self.bounds.center.x + self.bounds.extents.x > obj.bounds.center.x - obj.bounds.extents.x &&
+            self.bounds.center.x - self.bounds.extents.x < obj.bounds.center.x + obj.bounds.extents.x)
+        {
+            // Colliding outside-bottom and moving up
+            if (self.bounds.center.z < obj.bounds.center.z - obj.bounds.extents.z &&
+                self.bounds.center.z + self.bounds.extents.z > obj.bounds.center.z - obj.bounds.extents.z &&
+                Input.GetKey("w"))
+            {
+                position = position - Vector3.forward * speed;
+
+            }
+
+            // Colliding inside-top and moving down
+            if (self.bounds.center.z > obj.bounds.center.z - obj.bounds.extents.z &&
+                self.bounds.center.z - self.bounds.extents.z < obj.bounds.center.z - obj.bounds.extents.z &&
+                Input.GetKey("s"))
+            {
+                position = position + Vector3.forward * speed;
+
+            }
+
+            // Colliding outside-top and moving down
+            if (self.bounds.center.z > obj.bounds.center.z + obj.bounds.extents.z &&
+                self.bounds.center.z - self.bounds.extents.z < obj.bounds.center.z + obj.bounds.extents.z &&
+                Input.GetKey("s"))
+            {
+                position = position + Vector3.forward * speed;
+            }
+
+            // Colliding inside-bottom and moving up
+            if (self.bounds.center.z < obj.bounds.center.z + obj.bounds.extents.z &&
+                self.bounds.center.z + self.bounds.extents.z > obj.bounds.center.z + obj.bounds.extents.z &&
+                Input.GetKey("w"))
+            {
+                position = position - Vector3.forward * speed;
+            }
+        }
     }
 }
