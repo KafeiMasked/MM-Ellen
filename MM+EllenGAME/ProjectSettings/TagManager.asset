@@ -7,6 +7,10 @@ TagManager:
   - Platform
   - Ramp
   - TagForSomethingWeeee
+  - RampBT
+  - RampTB
+  - RampLR
+  - RampRL
   layers:
   - Default
   - TransparentFX

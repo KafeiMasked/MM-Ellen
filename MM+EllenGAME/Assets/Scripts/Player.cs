@@ -7,7 +7,10 @@ public class Player : MonoBehaviour
     float speed = 0.01f;
     Vector3 position;
     GameObject[] platforms;
-    GameObject[] ramps;
+    GameObject[] rampsBT;
+    GameObject[] rampsTB;
+    GameObject[] rampsLR;
+    GameObject[] rampsRL;
     BoxCollider body;
 
     // Start is called before the first frame update
@@ -15,7 +18,10 @@ public class Player : MonoBehaviour
     {
         position = transform.position;
         platforms = GameObject.FindGameObjectsWithTag("Platform");
-        ramps = GameObject.FindGameObjectsWithTag("Ramp");
+        rampsBT = GameObject.FindGameObjectsWithTag("RampBT");
+        rampsTB = GameObject.FindGameObjectsWithTag("RampTB");
+        rampsLR = GameObject.FindGameObjectsWithTag("RampLR");
+        rampsRL = GameObject.FindGameObjectsWithTag("RampRL");
         body = gameObject.GetComponent<BoxCollider>();
     }
 
@@ -32,8 +38,12 @@ public class Player : MonoBehaviour
             xCollisionHandler(body, box);
             zCollisionHandler(body, box);
         }
-        
-        foreach (GameObject ramp in ramps)
+
+        // The next four for-loops implement ramp inclinations in the four distinct directions. 
+        // There is almost certainly a better way to write these four for-loops using a single loop, which should be done in the future.
+
+        // Height increase from bottom (lowest z coordinate) to top (highest z coordinate)
+        foreach (GameObject ramp in rampsBT)
         {
             
             BoxCollider box = ramp.GetComponent<BoxCollider>();
@@ -57,6 +67,93 @@ public class Player : MonoBehaviour
                 if (Input.GetKey("s"))
                 {
                     position = position - Vector3.up * slope * speed;
+                }
+            }
+        }
+
+        // Height increase from top (higest z coordinate) to bottom (lowest z coordinate)
+        foreach (GameObject ramp in rampsTB)
+        {
+
+            BoxCollider box = ramp.GetComponent<BoxCollider>();
+
+            // Do not let player enter ramp from the side
+            xCollisionHandler(body, box);
+
+            // Move player up and down in y-direction on ramps
+            if (body.bounds.center.x + body.bounds.extents.x > box.bounds.center.x - box.bounds.extents.x &&
+                body.bounds.center.x - body.bounds.extents.x < box.bounds.center.x + box.bounds.extents.x &&
+                body.bounds.center.z + body.bounds.extents.z > box.bounds.center.z - box.bounds.extents.z &&
+                body.bounds.center.z - body.bounds.extents.z < box.bounds.center.z + box.bounds.extents.z)
+            {
+                float length = body.bounds.size.z + box.bounds.size.z;
+                float slope = box.bounds.size.y / length;
+
+                if (Input.GetKey("w"))
+                {
+                    position = position - Vector3.up * slope * speed;
+                }
+                if (Input.GetKey("s"))
+                {
+                    position = position + Vector3.up * slope * speed;
+                }
+            }
+        }
+
+        // Height increase from left (lowest x coordinate) to rigt (highest x coordinate)
+        foreach (GameObject ramp in rampsLR)
+        {
+
+            BoxCollider box = ramp.GetComponent<BoxCollider>();
+
+            // Do not let player enter ramp from the side
+            zCollisionHandler(body, box);
+
+            // Move player up and down in y-direction on ramps
+            if (body.bounds.center.x + body.bounds.extents.x > box.bounds.center.x - box.bounds.extents.x &&
+                body.bounds.center.x - body.bounds.extents.x < box.bounds.center.x + box.bounds.extents.x &&
+                body.bounds.center.z + body.bounds.extents.z > box.bounds.center.z - box.bounds.extents.z &&
+                body.bounds.center.z - body.bounds.extents.z < box.bounds.center.z + box.bounds.extents.z)
+            {
+                float length = body.bounds.size.x + box.bounds.size.x;
+                float slope = box.bounds.size.y / length;
+
+                if (Input.GetKey("d"))
+                {
+                    position = position + Vector3.up * slope * speed;
+                }
+                if (Input.GetKey("a"))
+                {
+                    position = position - Vector3.up * slope * speed;
+                }
+            }
+        }
+
+        // Height increase from right (highest x coordinate) to left (lowest x coordinate)
+        foreach (GameObject ramp in rampsRL)
+        {
+
+            BoxCollider box = ramp.GetComponent<BoxCollider>();
+
+            // Do not let player enter ramp from the side
+            zCollisionHandler(body, box);
+
+            // Move player up and down in y-direction on ramps
+            if (body.bounds.center.x + body.bounds.extents.x > box.bounds.center.x - box.bounds.extents.x &&
+                body.bounds.center.x - body.bounds.extents.x < box.bounds.center.x + box.bounds.extents.x &&
+                body.bounds.center.z + body.bounds.extents.z > box.bounds.center.z - box.bounds.extents.z &&
+                body.bounds.center.z - body.bounds.extents.z < box.bounds.center.z + box.bounds.extents.z)
+            {
+                float length = body.bounds.size.x + box.bounds.size.x;
+                float slope = box.bounds.size.y / length;
+
+                if (Input.GetKey("d"))
+                {
+                    position = position - Vector3.up * slope * speed;
+                }
+                if (Input.GetKey("a"))
+                {
+                    position = position + Vector3.up * slope * speed;
                 }
             }
         }
@@ -98,12 +195,14 @@ public class Player : MonoBehaviour
             position = position + (resultant / magnitude) * speed;
         }
     }
-    
+
     private void xCollisionHandler(BoxCollider self, BoxCollider obj)
     {
         // Only run this code if we are in the right z-location.
         if (self.bounds.center.z + self.bounds.extents.z > obj.bounds.center.z - obj.bounds.extents.z &&
-            self.bounds.center.z - self.bounds.extents.z < obj.bounds.center.z + obj.bounds.extents.z)
+            self.bounds.center.z - self.bounds.extents.z < obj.bounds.center.z + obj.bounds.extents.z &&
+            self.bounds.center.y + self.bounds.extents.y > obj.bounds.center.y - obj.bounds.extents.y &&
+            self.bounds.center.y - self.bounds.extents.y < (obj.bounds.center.y + obj.bounds.extents.y) * 0.5f)
         {
             // Colliding outside-left and moving right
             if (self.bounds.center.x < obj.bounds.center.x - obj.bounds.extents.x &&
@@ -143,9 +242,11 @@ public class Player : MonoBehaviour
 
     private void zCollisionHandler(BoxCollider self, BoxCollider obj)
     {
-        // Only run this code if we are in the right x-location.
+        // Only run this code if we are in the right x-location and right eight.
         if (self.bounds.center.x + self.bounds.extents.x > obj.bounds.center.x - obj.bounds.extents.x &&
-            self.bounds.center.x - self.bounds.extents.x < obj.bounds.center.x + obj.bounds.extents.x)
+            self.bounds.center.x - self.bounds.extents.x < obj.bounds.center.x + obj.bounds.extents.x &&
+            self.bounds.center.y + self.bounds.extents.y > obj.bounds.center.y - obj.bounds.extents.y &&
+            self.bounds.center.y - self.bounds.extents.y < (obj.bounds.center.y + obj.bounds.extents.y) * 0.5f)
         {
             // Colliding outside-bottom and moving up
             if (self.bounds.center.z < obj.bounds.center.z - obj.bounds.extents.z &&
