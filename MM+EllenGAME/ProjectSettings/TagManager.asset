@@ -11,6 +11,10 @@ TagManager:
   - EndLeft
   - EndTop
   - EndBottom
+  - RampBT
+  - RampTB
+  - RampLR
+  - RampRL
   layers:
   - Default
   - TransparentFX
