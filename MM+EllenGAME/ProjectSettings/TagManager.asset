@@ -7,6 +7,10 @@ TagManager:
   - Platform
   - Ramp
   - TagForSomethingWeeee
+  - EndRight
+  - EndLeft
+  - EndTop
+  - EndBottom
   layers:
   - Default
   - TransparentFX
