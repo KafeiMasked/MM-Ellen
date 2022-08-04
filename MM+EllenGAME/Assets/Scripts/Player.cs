@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    float speed = 0.01f;
+    float speed = 0.0125f;
+    float faster = 0.03f;
     Vector3 position;
     GameObject[] platforms;
     GameObject[] rampsBT;
@@ -62,11 +63,24 @@ public class Player : MonoBehaviour
 
                 if (Input.GetKey("w"))
                 {
-                    position = position + Vector3.up * slope * speed;
+                    if (Input.GetKey("c"))
+                    {
+                        position = position + Vector3.up * slope * faster;
+                    }
+                    else {
+                        position = position + Vector3.up * slope * speed;
+                    }
                 }
+                    
                 if (Input.GetKey("s"))
                 {
-                    position = position - Vector3.up * slope * speed;
+                    if (Input.GetKey("c"))
+                    {
+                        position = position - Vector3.up * slope * faster;
+                    }
+                    else {
+                        position = position - Vector3.up * slope * speed;
+                    }
                 }
             }
         }
@@ -91,11 +105,24 @@ public class Player : MonoBehaviour
 
                 if (Input.GetKey("w"))
                 {
-                    position = position - Vector3.up * slope * speed;
+                    if (Input.GetKey("c"))
+                    {
+                        position = position - Vector3.up * slope * faster;
+                    }
+                    else {
+                        position = position - Vector3.up * slope * speed;
+                    }
                 }
                 if (Input.GetKey("s"))
                 {
-                    position = position + Vector3.up * slope * speed;
+                    if (Input.GetKey("c"))
+                    {
+                        position = position + Vector3.up * slope * faster;
+                    }
+                    else {
+                        position = position + Vector3.up * slope * speed;
+                    }
+                    
                 }
             }
         }
@@ -120,11 +147,25 @@ public class Player : MonoBehaviour
 
                 if (Input.GetKey("d"))
                 {
-                    position = position + Vector3.up * slope * speed;
+                    if (Input.GetKey("c"))
+                    {
+                        position = position + Vector3.up * slope * faster;
+                    }
+                    else {
+                        position = position + Vector3.up * slope * speed;
+                    }
+                    
                 }
                 if (Input.GetKey("a"))
                 {
-                    position = position - Vector3.up * slope * speed;
+                    if (Input.GetKey("c"))
+                    {
+                        position = position - Vector3.up * slope * faster;
+                    }
+                    else {
+                        position = position - Vector3.up * slope * speed;
+                    }
+                    
                 }
             }
         }
@@ -149,11 +190,23 @@ public class Player : MonoBehaviour
 
                 if (Input.GetKey("d"))
                 {
-                    position = position - Vector3.up * slope * speed;
+                    if (Input.GetKey("c"))
+                    {
+                        position = position + Vector3.up * slope * faster;
+                    }
+                    else {
+                        position = position - Vector3.up * slope * speed;
+                    } 
                 }
                 if (Input.GetKey("a"))
                 {
-                    position = position + Vector3.up * slope * speed;
+                    if (Input.GetKey("c"))
+                    {
+                        position = position + Vector3.up * slope * faster;
+                    }
+                    else {
+                        position = position + Vector3.up * slope * speed;
+                    } 
                 }
             }
         }
@@ -168,31 +221,54 @@ public class Player : MonoBehaviour
         // Allow for multiple 'wasd' button presses at once
         int upMoveCount = 0;
         int rightMoveCount = 0;
+        int isFaster = 0;
 
         if (Input.GetKey("w"))
         {
             upMoveCount += 1;
+            if (Input.GetKey("c"))
+            {
+                isFaster += 1;
+            }
         }
         if (Input.GetKey("a"))
         {
             rightMoveCount -= 1;
+            if (Input.GetKey("c"))
+            {
+                isFaster += 1;
+            }
         }
         if (Input.GetKey("s"))
         {
             upMoveCount -= 1;
+            if (Input.GetKey("c"))
+            {
+                isFaster += 1;
+            }
         }
         if (Input.GetKey("d"))
         {
             rightMoveCount += 1;
+            if (Input.GetKey("c"))
+            {
+                isFaster += 1;
+            }
         }
+
         if (upMoveCount != 0 || rightMoveCount != 0)
         {
             // Determine magnitude and direction of new position vector relative to old position
             var magnitude = Mathf.Sqrt(rightMoveCount * rightMoveCount + upMoveCount * upMoveCount);
             var resultant = rightMoveCount * Vector3.right + upMoveCount * Vector3.forward;
-
+            if (isFaster !=0)
+            {
+                position = position + (resultant / magnitude) * faster;
+            }
+            else {
             // Set new position
             position = position + (resultant / magnitude) * speed;
+            }
         }
     }
 
@@ -209,8 +285,13 @@ public class Player : MonoBehaviour
                 self.bounds.center.x + self.bounds.extents.x > obj.bounds.center.x - obj.bounds.extents.x &&
                 Input.GetKey("d"))
             {
-                position = position - Vector3.right * speed;
-
+                if (Input.GetKey("c"))
+                {
+                    position = position - Vector3.right * faster;
+                }
+                else {
+                    position = position - Vector3.right * speed;
+                }
             }
 
             // Colliding inside-right and moving left
@@ -218,8 +299,13 @@ public class Player : MonoBehaviour
                 self.bounds.center.x - self.bounds.extents.x < obj.bounds.center.x - obj.bounds.extents.x &&
                 Input.GetKey("a"))
             {
-                position = position + Vector3.right * speed;
-
+                if (Input.GetKey("c"))
+                {
+                    position = position + Vector3.right * faster;
+                }
+                else {
+                    position = position + Vector3.right * speed;
+                }
             }
 
             // Colliding outside-right and moving left
@@ -227,7 +313,13 @@ public class Player : MonoBehaviour
                 self.bounds.center.x - self.bounds.extents.x < obj.bounds.center.x + obj.bounds.extents.x &&
                 Input.GetKey("a"))
             {
-                position = position + Vector3.right * speed;
+                if (Input.GetKey("c"))
+                {
+                    position = position + Vector3.right * faster;
+                }
+                else {
+                    position = position + Vector3.right * speed;
+                }
             }
 
             // Colliding inside-left and moving right
@@ -235,7 +327,13 @@ public class Player : MonoBehaviour
                 self.bounds.center.x + self.bounds.extents.x > obj.bounds.center.x + obj.bounds.extents.x &&
                 Input.GetKey("d"))
             {
-                position = position - Vector3.right * speed;
+                if (Input.GetKey("c"))
+                {
+                    position = position - Vector3.right * faster;
+                }
+                else {
+                    position = position - Vector3.right * speed;
+                }
             }
         }
     }
@@ -253,8 +351,13 @@ public class Player : MonoBehaviour
                 self.bounds.center.z + self.bounds.extents.z > obj.bounds.center.z - obj.bounds.extents.z &&
                 Input.GetKey("w"))
             {
-                position = position - Vector3.forward * speed;
-
+                if (Input.GetKey("c"))
+                {
+                    position = position - Vector3.forward * faster;
+                }
+                else {
+                    position = position - Vector3.forward * speed;
+                }
             }
 
             // Colliding inside-top and moving down
@@ -262,8 +365,13 @@ public class Player : MonoBehaviour
                 self.bounds.center.z - self.bounds.extents.z < obj.bounds.center.z - obj.bounds.extents.z &&
                 Input.GetKey("s"))
             {
-                position = position + Vector3.forward * speed;
-
+                if (Input.GetKey("c"))
+                {
+                    position = position + Vector3.forward * faster;
+                }
+                else {
+                    position = position + Vector3.forward * speed;
+                }
             }
 
             // Colliding outside-top and moving down
@@ -271,7 +379,13 @@ public class Player : MonoBehaviour
                 self.bounds.center.z - self.bounds.extents.z < obj.bounds.center.z + obj.bounds.extents.z &&
                 Input.GetKey("s"))
             {
-                position = position + Vector3.forward * speed;
+                if (Input.GetKey("c"))
+                {
+                    position = position + Vector3.forward * faster;
+                }
+                else {
+                    position = position + Vector3.forward * speed;
+                }
             }
 
             // Colliding inside-bottom and moving up
@@ -279,7 +393,13 @@ public class Player : MonoBehaviour
                 self.bounds.center.z + self.bounds.extents.z > obj.bounds.center.z + obj.bounds.extents.z &&
                 Input.GetKey("w"))
             {
-                position = position - Vector3.forward * speed;
+                if (Input.GetKey("c"))
+                {
+                    position = position - Vector3.forward * faster;
+                }
+                else {
+                    position = position - Vector3.forward * speed;
+                }
             }
         }
     }
